@@ -1,0 +1,37 @@
+stages:
+  - verify
+  - quality
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+.python:
+  image: python:3.12
+  cache:
+    paths:
+      - .cache/pip
+
+before_script:
+  - pip install -e ".[dev]"
+
+test:
+  extends: .python
+  stage: verify
+  script:
+    - python -m pytest -q
+    - python -m sast.cli test examples/sample_project
+
+analyze:
+  extends: .python
+  stage: quality
+  script:
+    - python -m sast.cli analyze examples/sample_project -f sarif -f html -f json
+  artifacts:
+    when: always
+    paths:
+      - examples/sample_project/sast-report/
+    expire_in: 1 week

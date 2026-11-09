@@ -1,0 +1,469 @@
+# Ground truth of the CodeShield benchmark corpus.
+#
+# Every entry is a finding the analyser must report at that exact
+# location.  A reported finding that is not listed here is counted
+# as a false positive by the benchmark.
+#
+# Regenerate with: python -m benchmarks.generate_manifest --write
+
+expectations:
+  - file: cxx.cpp
+    line: 82
+    rule: QLT-LOOP-002
+    severity: critical
+    message: "the condition of this loop is always true and its body cannot leave the loop, so the loop never terminates"
+  - file: security.c
+    line: 122
+    rule: SEC-CMD-001
+    severity: critical
+    message: "system() is called with a command that is not a string literal and can be influenced by an attacker"
+  - file: cxx.cpp
+    line: 69
+    rule: SEC-BUF-001
+    severity: high
+    message: "strcpy() copies an unbounded amount of data into a buffer of 32 byte(s)"
+  - file: cxx.cpp
+    line: 75
+    rule: SEC-FMT-001
+    severity: high
+    message: "printf() is called with a format string that is not a string literal"
+  - file: cxx.cpp
+    line: 82
+    rule: QLT-LOOP-001
+    severity: high
+    message: "the condition of this loop is always true because the left operand is unsigned, so the comparison against zero"
+  - file: security.c
+    line: 108
+    rule: SEC-BUF-001
+    severity: high
+    message: "strcpy() copies an unbounded amount of data into a buffer of 64 byte(s)"
+  - file: security.c
+    line: 116
+    rule: SEC-BUF-003
+    severity: high
+    message: "sprintf() formats an unbounded string into a buffer of 64 byte(s); use snprintf()"
+  - file: security.c
+    line: 127
+    rule: SEC-FMT-001
+    severity: high
+    message: "printf() is called with a format string that is not a string literal"
+  - file: security.c
+    line: 132
+    rule: SEC-CRED-001
+    severity: high
+    message: "the credential 'password' is hard coded in the source code"
+  - file: security.c
+    line: 152
+    rule: SEC-USE-002
+    severity: high
+    message: "'memory' is released twice; the first release is at line 151"
+  - file: security.c
+    line: 164
+    rule: SEC-USE-001
+    severity: high
+    message: "'memory' is used after it was released at line 163"
+  - file: security.c
+    line: 172
+    rule: SEC-BUF-004
+    severity: high
+    message: "memcpy() copies 32 byte(s) into a buffer of 16 byte(s)"
+  - file: security.c
+    line: 182
+    rule: SEC-RAND-001
+    severity: high
+    message: "'secret' is derived from rand() which is not cryptographically secure"
+  - file: standards.c
+    line: 133
+    rule: SEC-INT-001
+    severity: high
+    message: "the size passed to malloc() is computed with a multiplication that can overflow"
+  - file: cxx.cpp
+    line: 69
+    rule: QLT-DEPRECATED-001
+    severity: medium
+    message: "'strcpy' is deprecated; use strncpy or memcpy with an explicit size instead"
+  - file: cxx.cpp
+    line: 82
+    rule: QLT-LOOP-003
+    severity: medium
+    message: "'counter' is unsigned and is decremented in this loop, so it wraps around to its maximum value instead of reac"
+  - file: cxx.cpp
+    line: 89
+    rule: MISRA-21-012
+    severity: medium
+    message: "the exception handling features must not be used"
+  - file: cxx.cpp
+    line: 90
+    rule: MISRA-21-012
+    severity: medium
+    message: "the exception handling features must not be used"
+  - file: cxx.cpp
+    line: 91
+    rule: MISRA-21-012
+    severity: medium
+    message: "the exception handling features must not be used"
+  - file: quality.c
+    line: 94
+    rule: MISRA-21-006
+    severity: medium
+    message: "the standard library function free() must not be used"
+  - file: quality.c
+    line: 164
+    rule: MISRA-14-004
+    severity: medium
+    message: "the controlling expression of the if statement does not have an essentially boolean type"
+  - file: quality.c
+    line: 164
+    rule: QLT-ASSIGN-001
+    severity: medium
+    message: "the condition of the statement is an assignment"
+  - file: quality.c
+    line: 176
+    rule: QLT-COMPLEX-001
+    severity: medium
+    message: "the cyclomatic complexity of 'complex_function' is 17 and exceeds the limit of 10"
+  - file: security.c
+    line: 108
+    rule: QLT-DEPRECATED-001
+    severity: medium
+    message: "'strcpy' is deprecated; use strncpy or memcpy with an explicit size instead"
+  - file: security.c
+    line: 116
+    rule: QLT-DEPRECATED-001
+    severity: medium
+    message: "'sprintf' is deprecated; use snprintf instead"
+  - file: security.c
+    line: 117
+    rule: QLT-DEPRECATED-001
+    severity: medium
+    message: "'strcpy' is deprecated; use strncpy or memcpy with an explicit size instead"
+  - file: security.c
+    line: 138
+    rule: MISRA-21-006
+    severity: medium
+    message: "the standard library function malloc() must not be used"
+  - file: security.c
+    line: 138
+    rule: SEC-NULL-003
+    severity: medium
+    message: "the result of malloc() is not compared against NULL before it is used"
+  - file: security.c
+    line: 141
+    rule: MISRA-21-006
+    severity: medium
+    message: "the standard library function free() must not be used"
+  - file: security.c
+    line: 146
+    rule: MISRA-21-006
+    severity: medium
+    message: "the standard library function malloc() must not be used"
+  - file: security.c
+    line: 151
+    rule: MISRA-21-006
+    severity: medium
+    message: "the standard library function free() must not be used"
+  - file: security.c
+    line: 152
+    rule: MISRA-21-006
+    severity: medium
+    message: "the standard library function free() must not be used"
+  - file: security.c
+    line: 157
+    rule: MISRA-21-006
+    severity: medium
+    message: "the standard library function malloc() must not be used"
+  - file: security.c
+    line: 163
+    rule: MISRA-21-006
+    severity: medium
+    message: "the standard library function free() must not be used"
+  - file: security.c
+    line: 191
+    rule: SEC-CRYPTO-001
+    severity: medium
+    message: "MD5() is a weak hash algorithm and must not be used for digest related data"
+  - file: standards.c
+    line: 32
+    rule: MISRA-10-003
+    severity: medium
+    message: "a signed value is converted to an unsigned type"
+  - file: standards.c
+    line: 48
+    rule: QLT-TYPE-001
+    severity: medium
+    message: "a signed value is assigned to an unsigned variable and is converted implicitly"
+  - file: standards.c
+    line: 57
+    rule: MISRA-16-004
+    severity: medium
+    message: "the switch statement does not have a default label"
+  - file: standards.c
+    line: 76
+    rule: MISRA-10-003
+    severity: medium
+    message: "a signed value is converted to an unsigned type"
+  - file: standards.c
+    line: 91
+    rule: MISRA-10-003
+    severity: medium
+    message: "a signed value is converted to an unsigned type"
+  - file: standards.c
+    line: 109
+    rule: MISRA-10-003
+    severity: medium
+    message: "a signed value is converted to an unsigned type"
+  - file: standards.c
+    line: 115
+    rule: QLT-TYPE-001
+    severity: medium
+    message: "a signed value is assigned to an unsigned variable and is converted implicitly"
+  - file: standards.c
+    line: 120
+    rule: QLT-TYPE-001
+    severity: medium
+    message: "a signed value is assigned to an unsigned variable and is converted implicitly"
+  - file: standards.c
+    line: 126
+    rule: MISRA-21-010
+    severity: medium
+    message: "the standard library function time() must not be used"
+  - file: standards.c
+    line: 133
+    rule: MISRA-21-006
+    severity: medium
+    message: "the standard library function malloc() must not be used"
+  - file: standards.c
+    line: 138
+    rule: MISRA-21-006
+    severity: medium
+    message: "the standard library function free() must not be used"
+  - file: quality.c
+    line: 61
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 2 should be replaced by a named constant"
+  - file: quality.c
+    line: 100
+    rule: QLT-UNUSED-003
+    severity: low
+    message: "the static function 'clamp_percent' is never called in this file"
+  - file: quality.c
+    line: 105
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 100 should be replaced by a named constant"
+  - file: quality.c
+    line: 117
+    rule: QLT-UNUSED-001
+    severity: low
+    message: "the local variable 'scratch' is never used"
+  - file: quality.c
+    line: 120
+    rule: QLT-UNUSED-002
+    severity: low
+    message: "the parameter 'ignored' is never used"
+  - file: quality.c
+    line: 130
+    rule: QLT-SHADOW-001
+    severity: low
+    message: "the local variable 'value' shadows a declaration of an enclosing scope"
+  - file: quality.c
+    line: 142
+    rule: QLT-GOTO-001
+    severity: low
+    message: "the goto statement jumps to the label 'loop'"
+  - file: quality.c
+    line: 148
+    rule: QLT-BRACE-001
+    severity: low
+    message: "the body of the if statement is not enclosed in braces"
+  - file: quality.c
+    line: 148
+    rule: QLT-BRACE-001
+    severity: low
+    message: "the body of the else statement is not enclosed in braces"
+  - file: quality.c
+    line: 149
+    rule: MISRA-15-007
+    severity: low
+    message: "the body of the if statement is not a compound statement"
+  - file: quality.c
+    line: 151
+    rule: MISRA-15-007
+    severity: low
+    message: "the body of the else statement is not a compound statement"
+  - file: quality.c
+    line: 154
+    rule: MISRA-8-013
+    severity: low
+    message: "'pointer' is never used to modify the object it points to and could be declared as a pointer to const"
+  - file: quality.c
+    line: 156
+    rule: QLT-NULL-002
+    severity: low
+    message: "the pointer is compared with 0; use NULL instead"
+  - file: quality.c
+    line: 171
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 75 should be replaced by a named constant"
+  - file: quality.c
+    line: 176
+    rule: QLT-PARAM-001
+    severity: low
+    message: "'complex_function' has 6 parameters and exceeds the limit of 5"
+  - file: quality.c
+    line: 186
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 2 should be replaced by a named constant"
+  - file: quality.c
+    line: 186
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 2 should be replaced by a named constant"
+  - file: quality.c
+    line: 186
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 2 should be replaced by a named constant"
+  - file: quality.c
+    line: 189
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 3 should be replaced by a named constant"
+  - file: quality.c
+    line: 189
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 3 should be replaced by a named constant"
+  - file: quality.c
+    line: 189
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 3 should be replaced by a named constant"
+  - file: quality.c
+    line: 195
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 100 should be replaced by a named constant"
+  - file: security.c
+    line: 73
+    rule: QLT-MAGIC-001
+    severity: low
+    message: "the magic number 0.0 should be replaced by a named constant"
+  - file: security.c
+    line: 91
+    rule: QLT-UNUSED-003
+    severity: low
+    message: "the static function 'retry_count' is never called in this file"
+  - file: standards.c
+    line: 30
+    rule: QLT-UNUSED-003
+    severity: low
+    message: "the static function 'clear_state' is never called in this file"
+  - file: standards.c
+    line: 75
+    rule: MISRA-16-005
+    severity: low
+    message: "the default label is neither the first nor the last label of the switch statement"
+  - file: standards.c
+    line: 106
+    rule: QLT-BRACE-001
+    severity: low
+    message: "the body of the if statement is not enclosed in braces"
+  - file: standards.c
+    line: 106
+    rule: QLT-BRACE-001
+    severity: low
+    message: "the body of the else statement is not enclosed in braces"
+  - file: standards.c
+    line: 107
+    rule: MISRA-15-007
+    severity: low
+    message: "the body of the if statement is not a compound statement"
+  - file: standards.c
+    line: 109
+    rule: MISRA-15-007
+    severity: low
+    message: "the body of the else statement is not a compound statement"
+  - file: standards.c
+    line: 114
+    rule: MISRA-12-003
+    severity: low
+    message: "the comma operator must not be used"
+  - file: clean.c
+    line: 25
+    rule: MISRA-15-005
+    severity: info
+    message: "the function has 3 exit points but should have a single point of exit at the end"
+  - file: clean.c
+    line: 47
+    rule: MISRA-15-005
+    severity: info
+    message: "the function has 3 exit points but should have a single point of exit at the end"
+  - file: quality.c
+    line: 34
+    rule: MISRA-15-005
+    severity: info
+    message: "the function has 3 exit points but should have a single point of exit at the end"
+  - file: quality.c
+    line: 55
+    rule: MISRA-15-005
+    severity: info
+    message: "the function has 3 exit points but should have a single point of exit at the end"
+  - file: quality.c
+    line: 61
+    rule: QLT-CONST-001
+    severity: info
+    message: "'new_capacity' is never modified and could be declared const"
+  - file: quality.c
+    line: 100
+    rule: MISRA-15-005
+    severity: info
+    message: "the function has 3 exit points but should have a single point of exit at the end"
+  - file: quality.c
+    line: 117
+    rule: QLT-CONST-001
+    severity: info
+    message: "'scratch' is never modified and could be declared const"
+  - file: quality.c
+    line: 127
+    rule: QLT-CONST-001
+    severity: info
+    message: "'value' is never modified and could be declared const"
+  - file: quality.c
+    line: 130
+    rule: QLT-CONST-001
+    severity: info
+    message: "'value' is never modified and could be declared const"
+  - file: security.c
+    line: 170
+    rule: QLT-CONST-001
+    severity: info
+    message: "'length' is never modified and could be declared const"
+  - file: security.c
+    line: 177
+    rule: SEC-LEAK-001
+    severity: info
+    message: "the return value of snprintf() is ignored; the output may have been truncated"
+  - file: security.c
+    line: 182
+    rule: QLT-CONST-001
+    severity: info
+    message: "'secret' is never modified and could be declared const"
+  - file: standards.c
+    line: 22
+    rule: QLT-CONST-001
+    severity: info
+    message: "'sum' is never modified and could be declared const"
+  - file: standards.c
+    line: 114
+    rule: QLT-CONST-001
+    severity: info
+    message: "'result' is never modified and could be declared const"
+  - file: standards.c
+    line: 126
+    rule: QLT-CONST-001
+    severity: info
+    message: "'now' is never modified and could be declared const"

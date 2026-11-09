@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CodeShield 控制台 · {{ project }}</title>
+<link rel="stylesheet" href="/static/codeshield.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">CodeShield</span>
+    <h1>静态分析控制台</h1>
+    <span class="meta">项目 {{ project }} · 版本 {{ version }} · 根目录 {{ project_root }}</span>
+  </div>
+  <div class="actions">
+    <button id="btn-analyze" class="btn primary" type="button">运行分析</button>
+    <button id="btn-test" class="btn" type="button">运行测试</button>
+    <button id="btn-refresh" class="btn ghost" type="button">刷新</button>
+  </div>
+  <div class="score">
+    <div class="score-value" id="health-score">{{ kpi.health }}</div>
+    <div class="score-label">健康分</div>
+  </div>
+  <div class="verdict {{ 'ok' if kpi.passed else 'bad' }}" id="verdict">{{ 'PASS' if kpi.passed else 'FAIL' }}</div>
+</header>
+
+<main>
+  <section class="panel" id="kpis">
+    <h2>关键指标</h2>
+    <div class="cards">
+      <div class="card sev-total">
+        <div class="card-count" id="kpi-total">{{ kpi.total }}</div>
+        <div class="card-label">问题总数</div>
+      </div>
+      <div class="card sev-critical">
+        <div class="card-count" id="kpi-critical">{{ kpi.critical }}</div>
+        <div class="card-label">严重 · critical</div>
+      </div>
+      <div class="card sev-high">
+        <div class="card-count" id="kpi-high">{{ kpi.high }}</div>
+        <div class="card-label">高危 · high</div>
+      </div>
+      <div class="card sev-medium">
+        <div class="card-count" id="kpi-medium">{{ kpi.medium }}</div>
+        <div class="card-label">中危 · medium</div>
+      </div>
+      <div class="card sev-health">
+        <div class="card-count" id="kpi-health">{{ kpi.health }}</div>
+        <div class="card-label">健康分</div>
+      </div>
+      <div class="card">
+        <div class="card-count" id="kpi-files">{{ kpi.files }}</div>
+        <div class="card-label">扫描文件</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid-2">
+    <section class="panel" id="severity">
+      <h2>严重级别分布</h2>
+      <div class="sevbar" id="sevbar">
+        {% for name in severities %}
+        <span class="seg-{{ name }}" style="width: {{ kpi.share[name] }}%"></span>
+        {% endfor %}
+      </div>
+      <div class="sevlegend" id="sevlegend">
+        {% for name in severities %}
+        <span><i style="background: var(--{{ name }})"></i>{{ name }} · {{ kpi.counts.get(name, 0) }}</span>
+        {% endfor %}
+      </div>
+    </section>
+    <section class="panel" id="categories">
+      <h2>类别分布</h2>
+      <div class="bars" id="category-list">
+        {% for name, count in kpi.categories.items() %}
+        <div class="bar-row">
+          <span class="bar-label">{{ name }}</span>
+          <div class="bar"><div class="bar-fill" style="width: {{ kpi.share_category.get(name, 0) }}%"></div></div>
+          <span class="bar-value">{{ count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <section class="panel" id="findings">
+    <h2>问题清单</h2>
+    <div class="toolbar">
+      <label>级别
+        <select id="filter-severity">
+          <option value="">全部</option>
+          <option value="critical">critical</option>
+          <option value="high">high</option>
+          <option value="medium">medium</option>
+          <option value="low">low</option>
+          <option value="info">info</option>
+        </select>
+      </label>
+      <label>类别
+        <select id="filter-category"><option value="">全部</option></select>
+      </label>
+      <label>规则
+        <select id="filter-rule"><option value="">全部</option></select>
+      </label>
+      <label>搜索
+        <input id="filter-search" type="search" placeholder="规则、文件、函数、消息">
+      </label>
+      <button id="expand-all" class="btn ghost" type="button">展开全部</button>
+      <button id="collapse-all" class="btn ghost" type="button">折叠全部</button>
+      <span class="counter">显示 <b id="visible-count">0</b> / <b id="total-count">0</b></span>
+    </div>
+    <table class="vtable" id="findings-table">
+      <thead>
+        <tr>
+          <th data-sort="severity">级别</th>
+          <th data-sort="rule_id">规则</th>
+          <th data-sort="file">文件</th>
+          <th data-sort="line">行</th>
+          <th data-sort="message">消息</th>
+          <th class="static">操作</th>
+        </tr>
+      </thead>
+      <tbody id="findings-body"></tbody>
+    </table>
+  </section>
+
+  <section class="panel" id="tests">
+    <h2>单元测试</h2>
+    <div class="toolbar">
+      <button id="btn-test-run" class="btn" type="button">运行测试</button>
+      <span class="counter">测试结果与覆盖率</span>
+    </div>
+    <div id="test-summary"><p class="empty">尚未运行测试</p></div>
+  </section>
+
+  <section class="panel" id="history">
+    <h2>运行历史</h2>
+    <ul class="runlist" id="run-list"></ul>
+  </section>
+
+  <section class="panel" id="rules">
+    <h2>规则目录</h2>
+    <div class="toolbar">
+      <label>统计 <span id="rule-count">{{ rules | length }} 条规则</span></label>
+      <span class="counter">类别：{{ rule_categories | join(' · ') }}</span>
+    </div>
+    <div class="rule-groups" id="rule-groups">
+      {% for category, items in rule_groups.items() %}
+      <div class="rule-group">
+        <h3>{{ category }} ({{ items | length }})</h3>
+        <ul>
+          {% for rule in items %}
+          <li>
+            <span class="rule-id">{{ rule.rule_id }}</span>
+            <span class="rule-name">{{ rule.name }}</span>
+            <span class="badge sev-{{ rule.severity }}">{{ rule.severity }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</main>
+
+<div id="spinner" class="spinner hidden"><span class="spinner-label">处理中…</span></div>
+<div id="toast" class="toast hidden"></div>
+<script id="bootstrap" type="application/json">{{ bootstrap | tojson }}</script>
+<script src="/static/codeshield.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var button = document.getElementById("btn-test-run");
+  if (button && window.CodeShield) {
+    button.addEventListener("click", function () {
+      window.CodeShield.runTests();
+    });
+  }
+});
+</script>
+</body>
+</html>

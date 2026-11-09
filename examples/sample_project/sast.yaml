@@ -1,0 +1,35 @@
+analysis:
+  source_dirs:
+    - src
+    - include
+  excludes:
+    - "**/build/**"
+    - "**/third_party/**"
+    - "**/sast-report/**"
+  enabled_rules: []
+  disabled_rules:
+    - QLT-MAGIC-001
+  categories:
+    - security
+    - quality
+    - standards
+  severity_threshold: info
+  max_cyclomatic_complexity: 10
+  max_function_lines: 60
+  max_nesting_depth: 4
+  max_parameters: 5
+  report_formats:
+    - html
+    - json
+    - sarif
+  report_dir: sast-report
+  html_theme: dark
+  test_dirs:
+    - tests
+  coverage_dir: coverage
+  requirements_files:
+    - requirements/requirements.yaml
+  fail_on: high
+  extra:
+    standard: MISRA-C-2012
+    project_code: DEMO-SEC-001

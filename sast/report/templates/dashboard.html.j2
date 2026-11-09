@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="{{ theme }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CodeShield 报告 · {{ project }}</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.55; font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+html[data-theme="dark"] {
+  --bg: #0f1117;
+  --bg-soft: #161a23;
+  --panel: #1b202b;
+  --border: #262d3b;
+  --text: #e6e9ef;
+  --muted: #97a0b0;
+  --accent: #4c8dff;
+}
+html[data-theme="light"] {
+  --bg: #f4f6fb;
+  --bg-soft: #eef1f7;
+  --panel: #ffffff;
+  --border: #dbe1ee;
+  --text: #1c2230;
+  --muted: #5d6675;
+  --accent: #2563eb;
+}
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 20px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
+.brand .logo { color: var(--accent); font-weight: 700; letter-spacing: 2px; font-size: 12px; text-transform: uppercase; }
+.brand h1 { margin: 2px 0 4px; font-size: 21px; }
+.meta { color: var(--muted); font-size: 12px; }
+.score { margin-left: auto; text-align: center; padding: 0 12px; }
+.score-value { font-size: 30px; font-weight: 700; line-height: 1.1; }
+.score-label { color: var(--muted); font-size: 12px; }
+.verdict { padding: 7px 20px; border-radius: 999px; font-weight: 700; letter-spacing: 1px; }
+.verdict.ok { background: rgba(60, 200, 120, 0.16); color: #3cc878; }
+.verdict.bad { background: rgba(255, 77, 106, 0.16); color: #ff4d6a; }
+main { max-width: 1500px; margin: 0 auto; padding: 0 20px 48px; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 22px; margin: 20px 0; }
+.panel h2 { margin: 0 0 14px; font-size: 17px; border-left: 3px solid var(--accent); padding-left: 10px; }
+.panel h3 { margin: 18px 0 8px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.cards { display: flex; flex-wrap: wrap; gap: 12px; }
+.card { flex: 1 1 140px; padding: 14px 16px; border-radius: 10px; background: var(--bg-soft); border-left: 4px solid var(--muted); }
+.card-count { font-size: 26px; font-weight: 700; }
+.card-label { color: var(--muted); font-size: 12px; }
+.card.sev-critical { border-left-color: #ff4d6a; }
+.card.sev-high { border-left-color: #ff8a3d; }
+.card.sev-medium { border-left-color: #ffd166; }
+.card.sev-low { border-left-color: #4cc9f0; }
+.card.sev-info { border-left-color: #8b95a5; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 14px; }
+.toolbar label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+select, input[type="search"] { background: var(--bg-soft); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 12px; }
+input[type="search"] { min-width: 220px; }
+button.link { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--accent); cursor: pointer; padding: 4px 10px; font-size: 12px; }
+.counter { color: var(--muted); font-size: 12px; }
+table.vtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.vtable th, table.vtable td { padding: 7px 9px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+table.vtable thead th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+table.vtable tbody tr:hover { background: var(--bg-soft); }
+table.vtable td.rule b { display: block; }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.sev-critical { background: rgba(255, 77, 106, 0.16); color: #ff4d6a; }
+.sev-high { background: rgba(255, 138, 61, 0.16); color: #ff8a3d; }
+.sev-medium { background: rgba(255, 209, 102, 0.16); color: #ffd166; }
+.sev-low { background: rgba(76, 201, 240, 0.16); color: #4cc9f0; }
+.sev-info { background: rgba(139, 149, 165, 0.16); color: #9aa4b2; }
+.sub { color: var(--muted); font-size: 12px; }
+pre.snippet { margin: 0; padding: 8px 10px; background: var(--bg-soft); border-radius: 6px; overflow-x: auto; font-family: Consolas, "Courier New", monospace; font-size: 12px; white-space: pre-wrap; }
+tr.vdetail td { background: var(--bg-soft); }
+.detail { display: flex; flex-wrap: wrap; gap: 16px 26px; }
+.detail > div { flex: 1 1 170px; }
+.detail > div.wide { flex: 3 1 320px; }
+.detail h4 { margin: 0 0 6px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.detail ul, .detail ol { margin: 0; padding-left: 18px; }
+.detail p { margin: 0; }
+.bars .bar-row { display: flex; align-items: center; gap: 12px; margin: 6px 0; }
+.bar-label { flex: 0 0 200px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar { flex: 1 1 auto; height: 12px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--accent); border-radius: 999px; }
+.bar-value { flex: 0 0 42px; text-align: right; font-size: 12px; color: var(--muted); }
+.file-group { margin-bottom: 22px; }
+.file-group h4 { margin: 0 0 8px; font-size: 14px; }
+.pill { margin-left: 8px; padding: 1px 9px; border-radius: 999px; background: var(--bg-soft); color: var(--muted); font-size: 11px; }
+.empty { color: var(--muted); padding: 12px 0; }
+@media (max-width: 900px) {
+  .bar-label { flex: 0 0 120px; }
+  .score { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">CodeShield</span>
+    <h1>{{ project }}</h1>
+    <span class="meta">生成时间 {{ generated_at }} · 版本 {{ version }}</span>
+  </div>
+  <div class="score">
+    <div class="score-value">{{ health_score }}</div>
+    <div class="score-label">健康分</div>
+  </div>
+  <div class="verdict {{ 'ok' if passed else 'bad' }}">{{ status }}</div>
+</header>
+<main>
+<section class="panel" id="overview">
+  <h2>风险概览</h2>
+  <div class="cards">
+    {% for card in severity_cards %}
+    <div class="card sev-{{ card.severity }}">
+      <div class="card-count">{{ card.count }}</div>
+      <div class="card-label">{{ card.severity }} · {{ card.label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="meta">扫描文件 {{ files_scanned }} · 扫描行数 {{ lines_scanned }} · 耗时 {{ duration }}s · 风险分 {{ risk_score }} · 共 {{ total }} 个问题</p>
+</section>
+
+<section class="panel" id="violations">
+  <h2>违规明细</h2>
+  <div class="toolbar">
+    <label>严重级别
+      <select id="filter-severity">
+        <option value="">全部</option>
+        {% for card in severity_cards %}
+        <option value="{{ card.severity }}">{{ card.severity }} ({{ card.count }})</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>类别
+      <select id="filter-category">
+        <option value="">全部</option>
+        {% for item in categories %}
+        <option value="{{ item.name }}">{{ item.name }} ({{ item.count }})</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>规则
+      <select id="filter-rule">
+        <option value="">全部</option>
+        {% for item in rules %}
+        <option value="{{ item.rule_id }}">{{ item.rule_id }} ({{ item.count }})</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>搜索
+      <input id="filter-search" type="search" placeholder="规则 / 函数 / 文件 / 消息">
+    </label>
+    <span class="counter">显示 <b id="visible-count">{{ total }}</b> / {{ total }}</span>
+    <button id="expand-all" class="link" type="button">展开全部</button>
+    <button id="collapse-all" class="link" type="button">折叠全部</button>
+  </div>
+  <table class="vtable">
+    <thead>
+      <tr><th>级别</th><th>规则</th><th>位置</th><th>函数</th><th>消息</th><th>代码片段</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for violation in violations %}
+      {% include violation_template %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not violations %}
+  <p class="empty">没有发现问题，项目已通过质量门禁。</p>
+  {% endif %}
+</section>
+
+<section class="panel" id="breakdown">
+  <h2>类别与规则分布</h2>
+  <h3>按类别</h3>
+  {% for item in categories %}
+  <div class="bar-row">
+    <span class="bar-label">{{ item.name }}</span>
+    <span class="bar"><span class="bar-fill" style="width: {{ item.pct }}%"></span></span>
+    <span class="bar-value">{{ item.count }}</span>
+  </div>
+  {% endfor %}
+  <h3>按规则</h3>
+  {% for item in rules %}
+  <div class="bar-row">
+    <span class="bar-label">{{ item.rule_id }} · {{ item.name }}</span>
+    <span class="bar"><span class="bar-fill" style="width: {{ item.pct }}%"></span></span>
+    <span class="bar-value">{{ item.count }}</span>
+  </div>
+  {% endfor %}
+</section>
+
+<section class="panel" id="files">
+  <h2>按文件分组</h2>
+  {% for group in file_groups %}
+  <article class="file-group" id="{{ group.anchor }}">
+    <h4><a href="#{{ group.anchor }}">{{ group.path }}</a><span class="pill">{{ group.count }}</span></h4>
+    <table class="vtable">
+      <thead>
+        <tr><th>级别</th><th>规则</th><th>位置</th><th>消息</th></tr>
+      </thead>
+      <tbody>
+        {% for violation in group.violations %}
+        <tr>
+          <td><span class="badge sev-{{ violation.severity }}">{{ violation.severity }}</span></td>
+          <td>{{ violation.rule_id }} · {{ violation.rule_name }}</td>
+          <td><a href="#{{ violation.anchor }}">{{ violation.file }}:{{ violation.line }}:{{ violation.column }}</a></td>
+          <td>{{ violation.message }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+  {% endfor %}
+</section>
+
+<section class="panel" id="metrics">
+  <h2>文件指标</h2>
+  <table class="vtable">
+    <thead>
+      <tr><th>文件</th><th>语言</th><th>总行数</th><th>代码</th><th>注释</th><th>空行</th><th>函数</th><th>类</th><th>圈复杂度</th><th>最大嵌套</th><th>参数</th><th>全局</th><th>注释率</th></tr>
+    </thead>
+    <tbody>
+      {% for item in metrics %}
+      <tr>
+        <td>
+          {% if item.linked %}
+          <a href="#{{ item.anchor }}">{{ item.path }}</a>
+          {% else %}
+          {{ item.path }}
+          {% endif %}
+        </td>
+        <td>{{ item.language }}</td>
+        <td>{{ item.lines_total }}</td>
+        <td>{{ item.lines_code }}</td>
+        <td>{{ item.lines_comment }}</td>
+        <td>{{ item.lines_blank }}</td>
+        <td>{{ item.functions }}</td>
+        <td>{{ item.classes }}</td>
+        <td>{{ item.cyclomatic_complexity }}</td>
+        <td>{{ item.max_nesting }}</td>
+        <td>{{ item.parameters }}</td>
+        <td>{{ item.globals }}</td>
+        <td>{{ item.comment_ratio }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+</main>
+<script>
+{{ filter_script|safe }}
+</script>
+</body>
+</html>

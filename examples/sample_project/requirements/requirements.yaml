@@ -1,0 +1,60 @@
+requirements:
+  - id: REQ-001
+    title: "compute must reject a null output pointer"
+    description: "The compute function validates the output pointer before writing to it."
+    priority: high
+    status: approved
+    category: robustness
+    tags: [compute, pointer]
+    metadata:
+      function: compute
+
+  - id: REQ-002
+    title: "copy_name must not overflow the destination buffer"
+    description: "The name copy has to respect the capacity of the destination buffer."
+    priority: critical
+    status: approved
+    category: security
+    tags: [copy_name, buffer]
+    metadata:
+      function: copy_name
+
+  - id: REQ-003
+    title: "divide must handle a zero divisor"
+    description: "Division by zero returns a defined error value instead of trapping."
+    priority: high
+    status: approved
+    category: robustness
+    tags: [divide, arithmetic]
+    metadata:
+      function: divide
+
+  - id: REQ-004
+    title: "make_greeting must return a null terminated string"
+    description: "The greeting buffer is always terminated with a NUL byte."
+    priority: medium
+    status: approved
+    category: correctness
+    tags: [make_greeting, string]
+    metadata:
+      function: make_greeting
+
+  - id: REQ-005
+    title: "sum must add every element of the sequence"
+    description: "The sum helper returns the total of all the values it receives."
+    priority: medium
+    status: draft
+    category: correctness
+    tags: [sum, iteration]
+    metadata:
+      function: sum
+
+  - id: REQ-006
+    title: "greet must report failures instead of throwing"
+    description: "The greeting helper catches the exception and returns an error string."
+    priority: low
+    status: draft
+    category: reliability
+    tags: [greet, exception]
+    metadata:
+      function: greet

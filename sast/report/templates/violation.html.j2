@@ -1,0 +1,87 @@
+<tr class="vrow" id="{{ violation.row_id }}" data-severity="{{ violation.severity }}" data-category="{{ violation.category }}" data-rule="{{ violation.rule_id }}" data-detail="{{ violation.detail_id }}" data-text="{{ violation.search_text }}">
+  <td>
+    <span class="badge sev-{{ violation.severity }}">{{ violation.severity }}</span>
+    <span class="sub">{{ violation.severity_label }}</span>
+  </td>
+  <td class="rule">
+    <b>{{ violation.rule_id }}</b>
+    <span class="sub">{{ violation.rule_name }}</span>
+  </td>
+  <td>
+    <a class="loc" href="#{{ violation.anchor }}">{{ violation.file }}:{{ violation.line }}:{{ violation.column }}</a>
+    <span class="sub">{{ violation.category }}</span>
+  </td>
+  <td class="fn">{{ violation.function }}</td>
+  <td class="msg">{{ violation.message }}</td>
+  <td class="code">
+    {% if violation.snippet %}
+    <pre class="snippet">{{ violation.snippet }}</pre>
+    {% else %}
+    <span class="sub">—</span>
+    {% endif %}
+  </td>
+  <td>
+    <button class="vtoggle" type="button" data-target="{{ violation.detail_id }}">详情</button>
+  </td>
+</tr>
+<tr class="vdetail" id="{{ violation.detail_id }}" data-open="0" style="display:none">
+  <td colspan="7">
+    <div class="detail">
+      <div>
+        <h4>CWE</h4>
+        <ul>
+          {% for item in violation.cwe %}
+          <li>{{ item }}</li>
+          {% endfor %}
+          {% if not violation.cwe %}
+          <li class="sub">—</li>
+          {% endif %}
+        </ul>
+      </div>
+      <div>
+        <h4>OWASP</h4>
+        <ul>
+          {% for item in violation.owasp %}
+          <li>{{ item }}</li>
+          {% endfor %}
+          {% if not violation.owasp %}
+          <li class="sub">—</li>
+          {% endif %}
+        </ul>
+      </div>
+      <div>
+        <h4>标准</h4>
+        <ul>
+          {% for item in violation.standards %}
+          <li>{{ item }}</li>
+          {% endfor %}
+          {% if not violation.standards %}
+          <li class="sub">—</li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="wide">
+        <h4>修复建议</h4>
+        <p>{{ violation.recommendation }}</p>
+      </div>
+      <div class="wide">
+        <h4>数据流</h4>
+        {% if violation.trace %}
+        <ol class="trace">
+          {% for step in violation.trace %}
+          <li>
+            {% if step.anchor %}
+            <a href="#{{ step.anchor }}">{{ step.file }}:{{ step.line }}:{{ step.column }}</a>
+            {% else %}
+            {{ step.file }}:{{ step.line }}:{{ step.column }}
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ol>
+        {% else %}
+        <p class="sub">无</p>
+        {% endif %}
+      </div>
+    </div>
+  </td>
+</tr>

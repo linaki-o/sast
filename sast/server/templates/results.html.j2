@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CodeShield 运行详情 · {{ run.project }}</title>
+<link rel="stylesheet" href="/static/codeshield.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">CodeShield</span>
+    <h1>运行详情 · {{ run.kind }}</h1>
+    <span class="meta">运行 {{ run.id }} · {{ run.created_at }}</span>
+  </div>
+  <div class="actions">
+    <a class="btn" href="/">返回控制台</a>
+    {% for fmt in report_formats %}
+    <a class="btn" href="/api/report/{{ run_id }}/{{ fmt }}">下载 {{ fmt | upper }}</a>
+    {% endfor %}
+  </div>
+  <div class="score">
+    <div class="score-value">{{ run.health_score if run.health_score is defined else 0 }}</div>
+    <div class="score-label">健康分</div>
+  </div>
+  <div class="verdict {{ 'ok' if run.passed else 'bad' }}">{{ 'PASS' if run.passed else 'FAIL' }}</div>
+</header>
+
+<main>
+  <section class="panel" id="summary">
+    <h2>运行概览</h2>
+    <div class="kv">
+      <div><span>项目</span>{{ run.project }}</div>
+      <div><span>类型</span>{{ run.kind }}</div>
+      <div><span>创建时间</span>{{ run.created_at }}</div>
+      <div><span>耗时</span>{{ run.duration_s }} s</div>
+      {% if result %}
+      <div><span>扫描文件</span>{{ result.files_scanned }}</div>
+      <div><span>扫描行数</span>{{ result.lines_scanned }}</div>
+      <div><span>执行规则</span>{{ result.rules_executed }}</div>
+      <div><span>风险分</span>{{ result.risk_score }}</div>
+      {% endif %}
+    </div>
+    {% if result and result.warnings %}
+    <h3>警告</h3>
+    <ul>
+      {% for warning in result.warnings %}
+      <li class="sub">{{ warning }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+
+  {% if result %}
+  <section class="panel" id="findings">
+    <h2>违规明细 ({{ result.violations | length }})</h2>
+    <div class="toolbar">
+      <label>级别
+        <select id="filter-severity">
+          <option value="">全部</option>
+          <option value="critical">critical</option>
+          <option value="high">high</option>
+          <option value="medium">medium</option>
+          <option value="low">low</option>
+          <option value="info">info</option>
+        </select>
+      </label>
+      <label>类别
+        <select id="filter-category"><option value="">全部</option></select>
+      </label>
+      <label>规则
+        <select id="filter-rule"><option value="">全部</option></select>
+      </label>
+      <label>搜索
+        <input id="filter-search" type="search" placeholder="规则、文件、函数、消息">
+      </label>
+      <button id="expand-all" class="btn ghost" type="button">展开全部</button>
+      <button id="collapse-all" class="btn ghost" type="button">折叠全部</button>
+      <span class="counter">显示 <b id="visible-count">{{ result.violations | length }}</b> / <b id="total-count">{{ result.violations | length }}</b></span>
+    </div>
+    <table class="vtable" id="findings-table">
+      <thead>
+        <tr>
+          <th data-sort="severity">级别</th>
+          <th data-sort="rule_id">规则</th>
+          <th data-sort="file">文件</th>
+          <th data-sort="line">行</th>
+          <th data-sort="message">消息</th>
+          <th class="static">操作</th>
+        </tr>
+      </thead>
+      <tbody id="findings-body">
+        {% for violation in result.violations %}
+        <tr class="vrow"
+            data-severity="{{ violation.severity }}"
+            data-category="{{ violation.category }}"
+            data-rule="{{ violation.rule_id }}"
+            data-fingerprint="{{ violation.fingerprint }}">
+          <td>
+            <span class="badge sev-{{ violation.severity }}">{{ violation.severity }}</span>
+            <span class="sub"> {{ violation.severity_label }}</span>
+          </td>
+          <td><b>{{ violation.rule_id }}</b><br><span class="sub">{{ violation.rule_name }}</span></td>
+          <td>{{ violation.location.file }}<br><span class="sub">{{ violation.category }}</span></td>
+          <td class="num">{{ violation.location.line }}</td>
+          <td>{{ violation.message }}</td>
+          <td><button class="btn ghost vtoggle" type="button">详情</button></td>
+        </tr>
+        <tr class="vdetail" style="display:none">
+          <td colspan="6">
+            <div class="detail">
+              <div>
+                <h4>消息</h4>
+                <p>{{ violation.message }}</p>
+              </div>
+              <div>
+                <h4>修复建议</h4>
+                <p>{{ violation.recommendation or "—" }}</p>
+              </div>
+              <div>
+                <h4>CWE</h4>
+                <ul>
+                  {% for item in violation.cwe %}<li>{{ item }}</li>{% endfor %}
+                  {% if not violation.cwe %}<li>—</li>{% endif %}
+                </ul>
+              </div>
+              <div>
+                <h4>OWASP</h4>
+                <ul>
+                  {% for item in violation.owasp %}<li>{{ item }}</li>{% endfor %}
+                  {% if not violation.owasp %}<li>—</li>{% endif %}
+                </ul>
+              </div>
+              <div>
+                <h4>标准</h4>
+                <ul>
+                  {% for item in violation.standards %}<li>{{ item }}</li>{% endfor %}
+                  {% if not violation.standards %}<li>—</li>{% endif %}
+                </ul>
+              </div>
+              <div>
+                <h4>代码片段</h4>
+                <pre class="snippet">{{ violation.snippet or "—" }}</pre>
+              </div>
+              <div>
+                <h4>数据流</h4>
+                {% if violation.trace %}
+                <ol>
+                  {% for step in violation.trace %}
+                  <li>{{ step.file }}:{{ step.line }}:{{ step.column }}</li>
+                  {% endfor %}
+                </ol>
+                {% else %}
+                <p class="sub">无</p>
+                {% endif %}
+              </div>
+              <div>
+                <h4>函数</h4>
+                <p>{{ violation.function or "—" }}</p>
+              </div>
+              <div>
+                <h4>指纹</h4>
+                <p class="sub">{{ violation.fingerprint }}</p>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  {% if result and result.file_metrics %}
+  <section class="panel" id="metrics">
+    <h2>文件指标 ({{ result.file_metrics | length }})</h2>
+    <table class="vtable">
+      <thead>
+        <tr>
+          <th class="static">文件</th>
+          <th class="static">语言</th>
+          <th class="static">总行数</th>
+          <th class="static">代码</th>
+          <th class="static">注释</th>
+          <th class="static">空行</th>
+          <th class="static">函数</th>
+          <th class="static">类</th>
+          <th class="static">圈复杂度</th>
+          <th class="static">最大嵌套</th>
+          <th class="static">参数</th>
+          <th class="static">全局</th>
+          <th class="static">注释率</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in result.file_metrics %}
+        <tr>
+          <td><code>{{ item.path }}</code></td>
+          <td>{{ item.language }}</td>
+          <td class="num">{{ item.lines_total }}</td>
+          <td class="num">{{ item.lines_code }}</td>
+          <td class="num">{{ item.lines_comment }}</td>
+          <td class="num">{{ item.lines_blank }}</td>
+          <td class="num">{{ item.functions }}</td>
+          <td class="num">{{ item.classes }}</td>
+          <td class="num">{{ item.cyclomatic_complexity }}</td>
+          <td class="num">{{ item.max_nesting }}</td>
+          <td class="num">{{ item.parameters }}</td>
+          <td class="num">{{ item.globals }}</td>
+          <td class="num">{{ '%.1f' % (item.comment_ratio * 100) }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  {% if tests %}
+  <section class="panel" id="tests">
+    <h2>测试结果 · {{ tests.suite_name }}</h2>
+    <div class="kv">
+      <div><span>用例</span>{{ tests.total }}</div>
+      <div><span>失败</span>{{ tests.failed }}</div>
+      <div><span>通过率</span>{{ tests.pass_rate }}%</div>
+      <div><span>耗时</span>{{ tests.duration_ms }} ms</div>
+    </div>
+    {% if tests.results %}
+    <table class="vtable">
+      <thead>
+        <tr>
+          <th class="static">用例</th>
+          <th class="static">结果</th>
+          <th class="static">耗时(ms)</th>
+          <th class="static">信息</th>
+          <th class="static">需求</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in tests.results %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>
+            {% if item.passed %}
+            <span class="badge sev-low">pass</span>
+            {% else %}
+            <span class="badge sev-critical">fail</span>
+            {% endif %}
+          </td>
+          <td class="num">{{ item.duration_ms }}</td>
+          <td>{{ item.message or "—" }}</td>
+          <td class="sub">{{ item.requirement_ids | join(', ') or "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if coverage %}
+  <section class="panel" id="coverage">
+    <h2>覆盖率</h2>
+    <div class="kv">
+      <div><span>语句</span>{{ coverage.statement_coverage }}%</div>
+      <div><span>分支</span>{{ coverage.branch_coverage }}%</div>
+      <div><span>条件</span>{{ coverage.condition_coverage }}%</div>
+      <div><span>MC/DC</span>{{ coverage.mc_dc_coverage }}%</div>
+      <div><span>覆盖行</span>{{ coverage.covered_lines }} / {{ coverage.total_lines }}</div>
+    </div>
+    {% if coverage.files %}
+    <table class="vtable">
+      <thead>
+        <tr>
+          <th class="static">文件</th>
+          <th class="static">语句</th>
+          <th class="static">分支</th>
+          <th class="static">条件</th>
+          <th class="static">行</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for path, item in coverage.files.items() %}
+        <tr>
+          <td><code>{{ path }}</code></td>
+          <td class="num">{{ item.statement_coverage }}%</td>
+          <td class="num">{{ item.branch_coverage }}%</td>
+          <td class="num">{{ item.condition_coverage }}%</td>
+          <td class="num">{{ item.covered_lines }} / {{ item.total_lines }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if trace %}
+  <section class="panel" id="trace">
+    <h2>需求追踪</h2>
+    <div class="kv">
+      <div><span>需求</span>{{ trace.totals.requirements if trace.totals else 0 }}</div>
+      <div><span>已覆盖</span>{{ trace.totals.covered if trace.totals else 0 }}</div>
+      <div><span>未覆盖</span>{{ trace.totals.uncovered if trace.totals else 0 }}</div>
+    </div>
+  </section>
+  {% endif %}
+</main>
+
+<div id="spinner" class="spinner hidden"><span class="spinner-label">处理中…</span></div>
+<div id="toast" class="toast hidden"></div>
+<script id="bootstrap" type="application/json">{{ bootstrap | tojson }}</script>
+<script src="/static/codeshield.js"></script>
+</body>
+</html>
